@@ -10,8 +10,7 @@ SELECT phone FROM [Suppliers] where supplierid = 11;
 
 -- List first 10 orders placed, sorted descending by the order date
 
-SELECT *  FROM orders order by orderid limit 10; 
--- this is the first 10 orders, the readme asked for first 10 but asking for that specific date to be at the top makes it seem like you wanted the last 10, either way here are the first 10!
+SELECT *  FROM orders order by orderid DESC limit 10 ; 
 
 -- Find all customers that live in London, Madrid, or Brazil
 
