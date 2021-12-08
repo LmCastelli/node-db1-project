@@ -1,3 +1,6 @@
+const express = require('express')
+const Accounts = require('./accounts-model')
+const router = express.Router()
 
 const {
   errorHandling,
@@ -5,9 +8,6 @@ const {
   checkAccountId,
   checkAccountPayload,
 } = require('./accounts-middleware')
-
-const Accounts = require('./accounts-model')
-const router = require('express').Router()
 
 router.get('/', async (req, res, next) => {
   try {
@@ -19,7 +19,8 @@ router.get('/', async (req, res, next) => {
 })
 
 router.get('/:id', checkAccountId,  (req, res) => {
-  res.json(req.account)
+  res.status(200).json(req.account)
+  
 })
 
 router.post('/', checkAccountPayload, async (req, res, next) => {
@@ -40,9 +41,11 @@ router.delete('/:id', (req, res, next) => {
 })
 
 router.use((err, req, res, next) => { // eslint-disable-line
-  // DO YOUR MAGIC
-})
-
-router.use(errorHandling);
+  res.status(err.status || 500).json({
+    note: "something went wrong in the accounts router",
+    message: err.message,
+    stack: err.stack,
+  });
+});
 
 module.exports = router;

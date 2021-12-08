@@ -1,49 +1,51 @@
-
+const yup = require('yup')
 const Accounts = require('./accounts-model')
 
-const checkAccountPayload = (req, res, next) => {
-  if (req.body.name || !req.body.budget) {
-    next({status: 400, message: " name and budget are required "})
-  } else if (typeof req.body.name !== 'string') {
-    next({status: 400, message: "name of account must be a string"})
-  } else if (req.body.name.trim().length < 3 || req.body.name.trim().length > 100) {
-    next({status: 400, message: "name of account must be between 3 and 100"})
-  } else if (typeof req.body.budget !== 'number') {
-    next({status: 400, message: "budget of account must be a number"})
-  } else if (req.body.budget < '0' || req.body.budget > '1,000,000') {
-    next({status: 400, message: "budget of account is too large or too small"})
-  } else {
-    next();
+
+const accountSchema = yup.object().shape({
+  name: yup.string()
+    .typeError('name of account must be a string')
+    .trim()
+    .required('name and budget are required')
+    .min(3, 'name of account must be between 3 and 100')
+    .max(100, 'name of account must be between 3 and 100'),
+  budget: yup.number()
+    .typeError('budget of account must be a number')
+    .required('name and budget are required')
+    .min(0, 'budget of account is too large or too small')
+    .max(1000000, 'budget of account is too large or too small'),
+})
+
+exports.checkAccountPayload = async (req, res, next) => {
+  try {
+    const validated = await accountSchema.validate(req.body)
+    req.body = validated
+    next()
+  } catch (err) {
+    next({status: 400, message: err.errors[0]})
   }
 }
 
-const checkAccountNameUnique = (req, res, next) => {
+exports.checkAccountNameUnique = async (req, res, next) => {
   // DO YOUR MAGIC
 }
 
-async function checkAccountId(req, res, next)  {
+exports.checkAccountId = async (req, res, next) => {
   try {
     const account = await Accounts.getById(req.params.id)
-    if (account) {
-      req.account = account
-      next();
+    if (!account) {
+      next({status: 404, message: "account not found"})
     } else  {
-        next({status: 404, message: "account not found"})
+      req.account = account
+      next()
     }
   } catch (err) {
-    next(err);
+    next(err)
   }
 }
  
-function errorHandling (err, req, res, next) { //eslint-disable-line
+exports.errorHandling = (err, req, res, next) => { //eslint-disable-line
   res.status(err.status || 500).json({
     message: `There was an error: ${err.message}`,
-    stack: err.stack
   });
 }
-module.exports = {
-  errorHandling, 
-  checkAccountId, 
-  checkAccountNameUnique, 
-  checkAccountPayload,
-};
