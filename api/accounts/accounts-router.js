@@ -23,29 +23,33 @@ router.get('/:id', checkAccountId,  (req, res) => {
   
 })
 
-router.post('/', checkAccountPayload, async (req, res, next) => {
+router.post('/', checkAccountPayload, checkAccountNameUnique, async (req, res, next) => {
   try {
     const data = await Accounts.create(req.body)
-    res.json(data)
+    res.status(201).json(data)
   } catch (err) {
     next (err)
   }
 })
 
-router.put('/:id', (req, res, next) => {
-  // DO YOUR MAGIC
+router.put('/:id', checkAccountPayload, checkAccountNameUnique, checkAccountId, async (req, res, next) => {
+    try {
+      const updated = await Accounts.updateById(req.params.id, req.body)
+      res.status(200).json(updated)
+    } catch (err) {
+      next(err)
+    }
 });
 
-router.delete('/:id', (req, res, next) => {
-  // DO YOUR MAGIC
+router.delete('/:id', checkAccountId, async (req, res, next) => {
+  try {
+    const deletedAccount = await Accounts.deleteById(req.params.id)
+    res.json(deletedAccount)
+  } catch (err) {
+    next(err)
+  }
 })
 
-router.use((err, req, res, next) => { // eslint-disable-line
-  res.status(err.status || 500).json({
-    note: "something went wrong in the accounts router",
-    message: err.message,
-    stack: err.stack,
-  });
-});
+router.use(errorHandling);
 
 module.exports = router;

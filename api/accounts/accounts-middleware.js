@@ -27,7 +27,12 @@ exports.checkAccountPayload = async (req, res, next) => {
 }
 
 exports.checkAccountNameUnique = async (req, res, next) => {
-  // DO YOUR MAGIC
+  const notUnique = await Accounts.checkName(req.body.name)
+  if (notUnique) {
+    next({status:400, message: 'that name is taken'})
+  } else {
+    next()
+  }
 }
 
 exports.checkAccountId = async (req, res, next) => {
